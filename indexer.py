@@ -7,13 +7,19 @@ import os, shutil
 corpus_dir = "corpus"
 index_dir = "indexdir"
 
+# Supprime l'ancien index
 if os.path.exists(index_dir):
     shutil.rmtree(index_dir)
 
-schema = Schema(title=ID(stored=True), content=TEXT(stored=True))
+# Ajout du champ 'filename' dans le schéma
+schema = Schema(
+    title=ID(stored=True),
+    content=TEXT(stored=True),
+    filename=ID(stored=True)  # nouveau champ
+)
+
 os.mkdir(index_dir)
 ix = create_in(index_dir, schema)
-
 writer = ix.writer()
 
 for filename in os.listdir(corpus_dir):
@@ -25,7 +31,11 @@ for filename in os.listdir(corpus_dir):
             for page in reader.pages:
                 text += page.extract_text() or ""
             if detect(text[:1000]) == "fr":
-                writer.add_document(title=filename, content=text)
+                writer.add_document(
+                    title=filename,
+                    content=text,
+                    filename=filename  # Enregistrement du nom du fichier
+                )
                 print(f"Indexé : {filename}")
             else:
                 print(f"Ignoré (non-français) : {filename}")
@@ -33,3 +43,4 @@ for filename in os.listdir(corpus_dir):
             print(f"Erreur avec {filename} : {e}")
 
 writer.commit()
+print("✅ Indexation terminée.")
