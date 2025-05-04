@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Statistiques de recherche</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="p-4">
+    <div class="container">
+        <h1>📊 Statistiques des recherches</h1>
+        <a href="/" class="btn btn-link">⬅ Retour</a>
+        <table class="table mt-4">
+            <thead>
+                <tr><th>Mot-clé</th><th>Nombre de recherches</th></tr>
+            </thead>
+            <tbody>
+                {% for word, count in stats %}
+                    <tr><td>{{ word }}</td><td>{{ count }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
