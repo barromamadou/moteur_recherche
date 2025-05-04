@@ -21,8 +21,8 @@
                 {% for r in results %}
                     <li class="list-group-item">
                         <strong>{{ r['title'] }}</strong><br>
-                        <small>{{ r['content']|safe }}</small>
-                        <a class="btn btn-sm btn-outline-primary mt-2" href="/pdf/{{ r['title'] }}" target="_blank">
+                        <small>{{ r['content']|safe }}</small><br>
+                        <a class="btn btn-sm btn-outline-primary mt-2" href="/pdf/{{ r['filename'] }}" target="_blank">
                             📄 Voir le PDF
                         </a>
                     </li>

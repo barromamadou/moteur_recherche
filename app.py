@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_from_directory
 from whoosh.index import open_dir
 from whoosh.qparser import QueryParser
 from collections import Counter
@@ -7,7 +7,7 @@ import os
 port = int(os.environ.get("PORT", 5000))
 
 app = Flask(__name__)
-ix = open_dir("indexdir")
+ix = open_dir("indexdir")  # le dossier d’indexation
 search_stats = []
 
 @app.route("/", methods=["GET", "POST"])
@@ -24,9 +24,14 @@ def index():
             for hit in found:
                 results.append({
                     "title": hit["title"],
-                    "content": hit.highlights("content") or hit["content"][:300] + "..."
+                    "content": hit.highlights("content") or hit["content"][:300] + "...",
+                    "filename": hit["filename"]  # ajout du nom du fichier PDF
                 })
     return render_template("index.html", results=results, query=query)
+
+@app.route("/pdf/<path:filename>")
+def serve_pdf(filename):
+    return send_from_directory("pdfs", filename)
 
 @app.route("/stats")
 def stats():
