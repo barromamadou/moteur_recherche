@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, send_from_directory
 from whoosh.index import open_dir
 from whoosh.qparser import QueryParser
 from collections import Counter
+from flask import send_from_directory
 import os
 
 port = int(os.environ.get("PORT", 5000))
@@ -30,8 +31,8 @@ def index():
     return render_template("index.html", results=results, query=query)
 
 @app.route("/pdf/<path:filename>")
-def serve_pdf(filename):
-    return send_from_directory("pdfs", filename)
+def pdf(filename):
+    return send_from_directory("corpus", filename)
 
 @app.route("/stats")
 def stats():
