@@ -2,33 +2,493 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Moteur Scientifique</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="p-4">
-    <div class="container">
-        <h1>🔎 Moteur de Recherche Scientifique </h1>
-        <form method="post" class="my-3">
-            <input type="text" name="query" class="form-control" placeholder="Entrez votre recherche..." value="{{ query }}">
-            <button type="submit" class="btn btn-primary mt-2">Rechercher</button>
-        </form>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScientificSearch - Moteur de Recherche Scientifique</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        <a href="/stats" class="btn btn-link">📊 Voir les statistiques</a>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .floating-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 60px 0 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            letter-spacing: -1px;
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-bottom: 40px;
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto 60px;
+        }
+
+        .search-box {
+            position: relative;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 8px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .search-box:hover {
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 20px 60px 20px 30px;
+            border: none;
+            font-size: 18px;
+            background: transparent;
+            outline: none;
+            color: #333;
+        }
+
+        .search-input::placeholder {
+            color: #666;
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 20px;
+            padding: 15px 25px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .filter-chip {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .filter-chip:hover, .filter-chip.active {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            transform: translateY(-2px);
+        }
+
+        .stats-link {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 15px;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stats-link:hover {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            transform: translateY(-2px);
+        }
+
+        .results-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .result-item {
+            padding: 25px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border-radius: 15px;
+            margin-bottom: 15px;
+        }
+
+        .result-item:hover {
+            background: rgba(102, 126, 234, 0.05);
+            transform: translateX(5px);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-content {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #667eea;
+            color: #667eea;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .no-results {
+            text-align: center;
+            color: #666;
+            font-size: 1.1em;
+            padding: 50px 0;
+        }
+
+        .recent-searches {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .recent-searches h3 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .recent-item {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 8px 15px;
+            margin: 5px;
+            border-radius: 20px;
+            display: inline-block;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .recent-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .search-input {
+                padding: 15px 50px 15px 20px;
+                font-size: 16px;
+            }
+            
+            .search-btn {
+                padding: 12px 20px;
+            }
+            
+            .filters {
+                gap: 10px;
+            }
+            
+            .stats-link {
+                top: 20px;
+                right: 20px;
+                padding: 12px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation">
+        <div class="floating-particles" id="particles"></div>
+    </div>
+
+    <a href="/stats" class="stats-link">
+        <i class="fas fa-chart-bar"></i>
+        Statistiques
+    </a>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-search"></i> ScientificSearch</h1>
+            <p class="subtitle">Explorez la connaissance scientifique avec intelligence</p>
+        </div>
+
+        <div class="search-container">
+            <form method="post" class="search-box">
+                <input type="text" name="query" class="search-input" 
+                       placeholder="Recherchez des articles, thèses, rapports..." 
+                       value="{{ query if query else '' }}">
+                <button type="submit" class="search-btn">
+                    <i class="fas fa-search"></i>
+                    Rechercher
+                </button>
+            </form>
+
+            <div class="filters">
+                <div class="filter-chip active" data-filter="all">
+                    <i class="fas fa-globe"></i> Tous
+                </div>
+                <div class="filter-chip" data-filter="articles">
+                    <i class="fas fa-newspaper"></i> Articles
+                </div>
+                <div class="filter-chip" data-filter="theses">
+                    <i class="fas fa-graduation-cap"></i> Thèses
+                </div>
+                <div class="filter-chip" data-filter="reports">
+                    <i class="fas fa-file-alt"></i> Rapports
+                </div>
+                <div class="filter-chip" data-filter="recent">
+                    <i class="fas fa-clock"></i> Récents
+                </div>
+            </div>
+        </div>
+
+        <div class="recent-searches">
+            <h3><i class="fas fa-history"></i> Recherches récentes</h3>
+            <div class="recent-item">intelligence artificielle</div>
+            <div class="recent-item">machine learning</div>
+            <div class="recent-item">réseaux de neurones</div>
+            <div class="recent-item">traitement du langage</div>
+            <div class="recent-item">analyse de données</div>
+        </div>
 
         {% if results %}
-            <h4 class="mt-4">Résultats :</h4>
-            <ul class="list-group">
-                {% for r in results %}
-                    <li class="list-group-item">
-                        <strong>{{ r['title'] }}</strong><br>
-                        <small>{{ r['content']|safe }}</small><br>
-                        <a class="btn btn-sm btn-outline-primary mt-2" href="/pdf/{{ r['filename'] }}" target="_blank">
-                            📄 Voir le PDF
-                        </a>
-                    </li>
-                {% endfor %}
-            </ul>
+        <div class="results-container">
+            <h4 style="margin-bottom: 25px; color: #333; font-size: 1.3em;">
+                <i class="fas fa-list-alt"></i> Résultats trouvés ({{ results|length }})
+            </h4>
+            {% for r in results %}
+            <div class="result-item">
+                <div class="result-title">
+                    <i class="fas fa-file-pdf" style="color: #e74c3c;"></i>
+                    {{ r['title'] }}
+                </div>
+                <div class="result-content">
+                    {{ r['content']|safe }}
+                </div>
+                <div class="result-actions">
+                    <a href="/pdf/{{ r['filename'] }}" target="_blank" class="btn btn-primary">
+                        <i class="fas fa-external-link-alt"></i>
+                        Ouvrir PDF
+                    </a>
+                    <button class="btn btn-outline" onclick="saveToFavorites('{{ r['filename'] }}')">
+                        <i class="fas fa-heart"></i>
+                        Favoris
+                    </button>
+                    <button class="btn btn-outline" onclick="shareResult('{{ r['title'] }}')">
+                        <i class="fas fa-share"></i>
+                        Partager
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if query and not results %}
+        <div class="results-container">
+            <div class="no-results">
+                <i class="fas fa-search" style="font-size: 3em; color: #ccc; margin-bottom: 20px;"></i>
+                <p>Aucun résultat trouvé pour "{{ query }}"</p>
+                <p style="margin-top: 10px; font-size: 0.9em;">Essayez avec d'autres mots-clés ou utilisez les filtres ci-dessus.</p>
+            </div>
+        </div>
         {% endif %}
     </div>
+
+    <script>
+        // Animation des particules flottantes
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 20;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.width = Math.random() * 4 + 2 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Gestion des filtres
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Ici vous pouvez ajouter la logique de filtrage
+                console.log('Filtre sélectionné:', this.dataset.filter);
+            });
+        });
+
+        // Gestion des recherches récentes
+        document.querySelectorAll('.recent-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelector('.search-input').value = this.textContent;
+                document.querySelector('.search-input').focus();
+            });
+        });
+
+        // Fonctions pour les boutons d'actions
+        function saveToFavorites(filename) {
+            // Logique pour sauvegarder en favoris
+            alert('Document ajouté aux favoris !');
+        }
+
+        function shareResult(title) {
+            // Logique pour partager
+            if (navigator.share) {
+                navigator.share({
+                    title: title,
+                    text: 'Découvrez ce document scientifique intéressant',
+                    url: window.location.href
+                });
+            } else {
+                alert('Lien copié dans le presse-papiers !');
+            }
+        }
+
+        // Auto-completion (simulation)
+        const searchInput = document.querySelector('.search-input');
+        searchInput.addEventListener('input', function() {
+            // Ici vous pouvez ajouter une logique d'auto-completion
+            console.log('Recherche en cours:', this.value);
+        });
+
+        // Initialisation
+        createParticles();
+    </script>
 </body>
 </html>
