@@ -419,9 +419,62 @@
                 padding: 12px 16px;
             }
         }
+        .top-bar {
+    width: 100%;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.nav-logo {
+    color: white;
+    font-size: 1.6em;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.nav-links a {
+    margin-left: 15px;
+    text-decoration: none;
+}
+
+.container {
+    margin-top: 120px; /* Pour que le contenu ne soit pas caché sous la nav */
+}
+
     </style>
 </head>
+
 <body>
+    <nav class="top-bar">
+    <div class="nav-container">
+        <a href="/" class="nav-logo"><i class="fas fa-search"></i> ScientificSearch</a>
+        <div class="nav-links">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('upload') }}" class="btn btn-outline"><i class="fas fa-upload"></i> Publier</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-outline"><i class="fas fa-sign-in-alt"></i> Connexion</a>
+                <a href="{{ url_for('register') }}" class="btn btn-primary"><i class="fas fa-user-plus"></i> Inscription</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
     <div class="background-animation">
         <div class="floating-particles" id="particles"></div>
     </div>

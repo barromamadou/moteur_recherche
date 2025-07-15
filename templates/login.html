@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1><i class="fas fa-sign-in-alt"></i> Connexion</h1>
+        <p class="subtitle">Connectez-vous pour accéder aux fonctionnalités avancées</p>
+    </div>
+
+    <div class="search-container">
+        <form method="POST" class="search-box" style="max-width: 500px; margin: auto;">
+            <input type="email" name="email" class="search-input" placeholder="Adresse e-mail" required>
+            <input type="password" name="password" class="search-input" placeholder="Mot de passe" required>
+            <button type="submit" class="search-btn">
+                <i class="fas fa-sign-in-alt"></i> Se connecter
+            </button>
+        </form>
+        <div style="text-align: center; margin-top: 15px; color: white;">
+            Pas encore de compte ? <a href="{{ url_for('register') }}" style="color: #fff; text-decoration: underline;">Créer un compte</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

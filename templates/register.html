@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1><i class="fas fa-user-plus"></i> Inscription</h1>
+        <p class="subtitle">Créez votre compte pour publier des ressources scientifiques</p>
+    </div>
+
+    <div class="search-container">
+        <form method="POST" class="search-box" style="max-width: 500px; margin: auto;">
+            <input type="email" name="email" class="search-input" placeholder="Adresse e-mail" required>
+            <input type="password" name="password" class="search-input" placeholder="Mot de passe" required>
+            <button type="submit" class="search-btn">
+                <i class="fas fa-user-plus"></i> S'inscrire
+            </button>
+        </form>
+        <div style="text-align: center; margin-top: 15px; color: white;">
+            Vous avez déjà un compte ? <a href="{{ url_for('login') }}" style="color: #fff; text-decoration: underline;">Se connecter</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
