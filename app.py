@@ -44,6 +44,10 @@ class Resource(db.Model):
     filename = db.Column(db.String(255), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
+@app.context_processor
+def inject_user():
+    return dict(current_user=current_user)
+
 # --- Authentification ---
 
 @login_manager.user_loader
