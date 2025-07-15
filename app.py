@@ -10,12 +10,21 @@ from whoosh.fields import Schema, TEXT, ID
 from whoosh.analysis import StemmingAnalyzer
 from whoosh.qparser import QueryParser
 from collections import Counter
+from flask_login import LoginManager, current_user
 
 # --- Configuration ---
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'votre_clé_secrète'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///scientific.db'
 app.config['UPLOAD_FOLDER'] = 'uploads'
+ogin_manager = LoginManager(app)
+
+# Ton user_loader et modèle User...
+
+@app.route('/')
+def index():
+    # Pas besoin de passer current_user, Flask-Login le fait automatiquement
+    return render_template('index.html')
 
 # Création dossier uploads s'il n'existe pas
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
