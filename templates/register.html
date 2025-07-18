@@ -1,22 +1,95 @@
 {% extends "base.html" %}
-{% block content %}
-<div class="container">
-    <div class="header">
-        <h1><i class="fas fa-user-plus"></i> Inscription</h1>
-        <p class="subtitle">Créez votre compte pour publier des ressources scientifiques</p>
-    </div>
+{% block title %}Inscription - ScientificSearch{% endblock %}
 
-    <div class="search-container">
-        <form method="POST" class="search-box" style="max-width: 500px; margin: auto;">
-            <input type="email" name="email" class="search-input" placeholder="Adresse e-mail" required>
-            <input type="password" name="password" class="search-input" placeholder="Mot de passe" required>
-            <button type="submit" class="search-btn">
-                <i class="fas fa-user-plus"></i> S'inscrire
-            </button>
+{% block content %}
+    <style>
+        .register-container {
+            max-width: 450px;
+            margin: 100px auto;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .register-container h2 {
+            font-weight: bold;
+            font-size: 1.8em;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .register-container p {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+
+        .btn-submit {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 14px;
+            font-size: 16px;
+            border: none;
+            width: 100%;
+            border-radius: 12px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
+        .link-login {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.95em;
+        }
+
+        .link-login a {
+            color: #764ba2;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .link-login a:hover {
+            text-decoration: underline;
+        }
+    </style>
+
+    <div class="register-container">
+        <h2><i class="fas fa-user-plus"></i> Créer un compte</h2>
+        <p>Publiez vos ressources scientifiques</p>
+
+        <form method="POST">
+            <div>
+                <label for="email" class="form-label">Adresse e-mail</label>
+                <input type="email" class="form-control" id="email" name="email" required placeholder="votre@email.com">
+            </div>
+            <div>
+                <label for="password" class="form-label">Mot de passe</label>
+                <input type="password" class="form-control" id="password" name="password" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn-submit">S'inscrire</button>
         </form>
-        <div style="text-align: center; margin-top: 15px; color: white;">
-            Vous avez déjà un compte ? <a href="{{ url_for('login') }}" style="color: #fff; text-decoration: underline;">Se connecter</a>
+
+        <div class="link-login">
+            Vous avez déjà un compte ? <a href="{{ url_for('login') }}">Connectez-vous</a>
         </div>
     </div>
-</div>
 {% endblock %}

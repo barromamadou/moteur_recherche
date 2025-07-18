@@ -1,22 +1,97 @@
 {% extends "base.html" %}
-{% block content %}
-<div class="container">
-    <div class="header">
-        <h1><i class="fas fa-sign-in-alt"></i> Connexion</h1>
-        <p class="subtitle">Connectez-vous pour accéder aux fonctionnalités avancées</p>
-    </div>
+{% block title %}Connexion - ScientificSearch{% endblock %}
 
-    <div class="search-container">
-        <form method="POST" class="search-box" style="max-width: 500px; margin: auto;">
-            <input type="email" name="email" class="search-input" placeholder="Adresse e-mail" required>
-            <input type="password" name="password" class="search-input" placeholder="Mot de passe" required>
-            <button type="submit" class="search-btn">
-                <i class="fas fa-sign-in-alt"></i> Se connecter
-            </button>
-        </form>
-        <div style="text-align: center; margin-top: 15px; color: white;">
-            Pas encore de compte ? <a href="{{ url_for('register') }}" style="color: #fff; text-decoration: underline;">Créer un compte</a>
+{% block content %}
+<style>
+    .login-container {
+        max-width: 450px;
+        margin: 100px auto;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+    }
+
+    .login-container h2 {
+        font-weight: bold;
+        font-size: 1.8em;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .login-container p {
+        text-align: center;
+        color: #666;
+        margin-bottom: 25px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .form-control {
+        border-radius: 10px;
+        padding: 12px;
+        border: 1px solid #ccc;
+        margin-bottom: 20px;
+    }
+
+    .btn-submit {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        padding: 14px;
+        font-size: 16px;
+        border: none;
+        width: 100%;
+        border-radius: 12px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .link-register {
+        text-align: center;
+        margin-top: 15px;
+        font-size: 0.95em;
+    }
+
+    .link-register a {
+        color: #764ba2;
+        font-weight: bold;
+        text-decoration: none;
+    }
+
+    .link-register a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="login-container">
+    <h2><i class="fas fa-sign-in-alt"></i> Connexion</h2>
+    <p>Connectez-vous pour accéder aux fonctionnalités avancées</p>
+
+    <form method="POST">
+        <div>
+            <label for="email" class="form-label">Adresse e-mail</label>
+            <input type="email" name="email" id="email" class="form-control" placeholder="votre@email.com" required>
         </div>
+
+        <div>
+            <label for="password" class="form-label">Mot de passe</label>
+            <input type="password" name="password" id="password" class="form-control" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="btn-submit">Se connecter</button>
+    </form>
+
+    <div class="link-register">
+        Pas encore de compte ? <a href="{{ url_for('register') }}">Créer un compte</a>
     </div>
 </div>
 {% endblock %}

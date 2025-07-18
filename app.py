@@ -10,21 +10,12 @@ from whoosh.fields import Schema, TEXT, ID
 from whoosh.analysis import StemmingAnalyzer
 from whoosh.qparser import QueryParser
 from collections import Counter
-from flask_login import LoginManager, current_user
 
 # --- Configuration ---
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'votre_clé_secrète'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///scientific.db'
 app.config['UPLOAD_FOLDER'] = 'uploads'
-ogin_manager = LoginManager(app)
-
-# Ton user_loader et modèle User...
-
-@app.route('/')
-def index():
-    # Pas besoin de passer current_user, Flask-Login le fait automatiquement
-    return render_template('index.html')
 
 # Création dossier uploads s'il n'existe pas
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -64,7 +55,6 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 # --- Whoosh index ---
-
 try:
     ix = open_dir("indexdir")
 except:
@@ -75,7 +65,6 @@ except:
 search_stats = []
 
 # --- Fonctions utilitaires pour extraction texte ---
-
 def extract_text_from_pdf(path):
     text = ""
     try:
@@ -124,31 +113,59 @@ def index_document(title, filename):
     writer.commit()
     print(f"Indexation terminée pour {filename}")
 
-# --- Routes ---
+def get_document_type(filename):
+    filename_lower = filename.lower()
+    if 'article' in filename_lower or 'paper' in filename_lower:
+        return 'articles'
+    elif 'these' in filename_lower or 'thesis' in filename_lower:
+        return 'theses'
+    elif 'rapport' in filename_lower or 'report' in filename_lower:
+        return 'reports'
+    elif 'memoire' in filename_lower or 'memoir' in filename_lower:
+        return 'memoires'
+    elif filename.endswith('.pdf'):
+        return 'articles'
+    elif filename.endswith('.docx'):
+        return 'reports'
+    elif filename.endswith('.txt'):
+        return 'memoires'
+    return 'unknown'
 
+# --- Routes principales ---
 @app.route("/", methods=["GET", "POST"])
 def index():
     results = []
     query = ""
+    filter_type = "all"
+    
     if request.method == "POST":
         query = request.form.get("query", "")
+        filter_type = request.form.get("filter", "all")
         search_stats.append(query)
+        
         if ix:
             with ix.searcher() as searcher:
                 parser = QueryParser("content", ix.schema)
                 myquery = parser.parse(query)
-                found = searcher.search(myquery, limit=10)
+                found = searcher.search(myquery, limit=100)  # Augmenter la limite
+                
                 for hit in found:
-                    results.append({
-                        "title": hit["title"],
-                        "content": hit.highlights("content") or hit["content"][:300] + "...",
-                        "filename": hit["filename"]
-                    })
-    return render_template("index.html", results=results, query=query)
+                    # Déterminer le type de document
+                    doc_type = get_document_type(hit["filename"])
+                    
+                    # Filtrer selon le type sélectionné
+                    if filter_type == "all" or filter_type == doc_type:
+                        results.append({
+                            "title": hit["title"],
+                            "content": hit.highlights("content") or hit["content"][:300] + "...",
+                            "filename": hit["filename"],
+                            "type": doc_type
+                        })
+    
+    return render_template("index.html", results=results, query=query, filter_type=filter_type)
 
 @app.route("/pdf/<path:filename>")
 def pdf(filename):
-    # Attention: si tu stockes dans uploads, change ici "uploads"
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.route("/stats")
@@ -197,38 +214,30 @@ def upload():
         texte_libre = request.form.get("texte_libre", "").strip()
 
         if file and file.filename != "":
-            # Vérifier extension autorisée
             if not any(file.filename.endswith(ext) for ext in [".pdf", ".docx", ".txt"]):
                 return "Format de fichier non supporté. Seuls PDF, DOCX, TXT autorisés."
             filename = file.filename
             save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(save_path)
 
-            # Sauvegarder en base
             resource = Resource(title=title, filename=filename, user_id=current_user.id)
             db.session.add(resource)
             db.session.commit()
 
-            # Indexer automatiquement
             index_document(title, filename)
-
             return redirect(url_for("index"))
 
         elif texte_libre:
-            # Sauvegarder texte libre dans fichier .txt
             filename = f"resource_{current_user.id}_{len(texte_libre)}.txt"
             save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             with open(save_path, "w", encoding="utf-8") as f:
                 f.write(texte_libre)
 
-            # Sauvegarder en base
             resource = Resource(title=title, filename=filename, user_id=current_user.id)
             db.session.add(resource)
             db.session.commit()
 
-            # Indexer automatiquement
             index_document(title, filename)
-
             return redirect(url_for("index"))
 
         else:
@@ -236,11 +245,8 @@ def upload():
 
     return render_template("upload.html")
 
-# --- Initialisation base de données ---
-@app.before_first_request
-def create_tables():
+with app.app_context():
     db.create_all()
-
-# --- Lancement ---
+    
 if __name__ == "__main__":
     app.run(debug=True, port=int(os.environ.get("PORT", 5000)))

@@ -1,29 +1,122 @@
 {% extends "base.html" %}
+{% block title %}Publier une ressource - ScientificSearch{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div class="header">
-        <h1><i class="fas fa-upload"></i> Publier une ressource</h1>
-        <p class="subtitle">Ajoutez un article, une thèse ou un mémoire au moteur de recherche</p>
-    </div>
+    <style>
+        .upload-container {
+            max-width: 750px; /* plus large qu’avant */
+            margin: 100px auto;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
 
-    <div class="search-container">
-        <form method="POST" enctype="multipart/form-data" class="search-box" style="max-width: 600px; margin: auto;">
-            <input type="text" name="title" class="search-input" placeholder="Titre du document" required>
+        .upload-container h2 {
+            font-weight: bold;
+            font-size: 1.8em;
+            text-align: center;
+            margin-bottom: 20px;
+        }
 
-            <label style="color: white; margin-top: 10px; display: block;">
-                Fichier (PDF, DOCX, TXT) :
-                <input type="file" name="file" accept=".pdf,.docx,.txt" style="margin-top: 5px;">
-            </label>
+        .upload-container p {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
 
-            <label style="color: white; margin-top: 15px; display: block;">
-                Ou saisissez un texte libre à indexer (optionnel) :
-                <textarea name="texte_libre" rows="6" style="width: 100%; margin-top: 5px; border-radius: 8px; padding: 10px;" placeholder="Collez votre texte ici..."></textarea>
-            </label>
+        .form-label {
+            font-weight: 600;
+            color: #333;
+        }
 
-            <button type="submit" class="search-btn" style="margin-top: 20px;">
-                <i class="fas fa-upload"></i> Publier
-            </button>
+        .form-control {
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid #ccc;
+            margin-bottom: 25px;
+        }
+
+        textarea.form-control {
+            min-height: 200px; /* hauteur augmentée */
+            resize: vertical;
+        }
+
+        .btn-submit {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 14px;
+            font-size: 16px;
+            border: none;
+            width: 100%;
+            border-radius: 12px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+        input[type="text"], textarea, input[type="file"] {
+    width: 100%;
+    max-width: 600px;
+    padding: 15px;
+    font-size: 1.1em;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+}
+
+textarea {
+    height: 200px;
+    resize: vertical;
+}
+
+label {
+    font-weight: bold;
+    font-size: 1.1em;
+    display: block;
+    margin-top: 20px;
+}
+
+button[type="submit"] {
+    padding: 15px 40px;
+    font-size: 1.2em;
+    border-radius: 12px;
+    background: linear-gradient(to right, #6a11cb, #2575fc);
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background 0.3s ease;
+}
+
+button[type="submit"]:hover {
+    background: linear-gradient(to right, #5b0ecc, #1e5bf0);
+}
+
+
+    </style>
+
+    <div class="upload-container">
+        <h2><i class="fas fa-upload"></i> Publier une ressource</h2>
+        <p>Ajoutez un article, une thèse ou un mémoire</p>
+
+        <form method="POST" enctype="multipart/form-data">
+            <label for="title">Titre du document</label>
+            <input type="text" id="title" name="title" placeholder="Ex : Mémoire sur l'IA">
+        
+            <label for="file">Fichier (PDF, DOCX ou TXT)</label>
+            <input type="file" id="file" name="file">
+        
+            <label for="content">Ou collez votre texte directement</label>
+            <textarea id="content" name="content" placeholder="Collez ou rédigez votre texte ici..."></textarea>
+        
+            <button type="submit">Publier</button>
         </form>
+        
     </div>
-</div>
 {% endblock %}

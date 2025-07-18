@@ -461,21 +461,18 @@
 </head>
 
 <body>
-    <p style="color:white; padding: 10px; background: rgba(0,0,0,0.5); position: fixed; top: 60px; right: 10px; z-index: 2000;">
-        Connexion active ? {{ current_user.is_authenticated }}
-    </p>
     
 <nav class="top-bar">
     <div class="nav-container">
         <a href="/" class="nav-logo"><i class="fas fa-search"></i> ScientificSearch</a>
         <div class="nav-links">
-           
-                <a href="{{ url_for('upload') }}" class="btn btn-outline"><i class="fas fa-upload"></i> Publier</a>
-                <a href="{{ url_for('logout') }}" class="btn btn-outline"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
-           
-                <a href="{{ url_for('login') }}" class="btn btn-outline"><i class="fas fa-sign-in-alt"></i> Connexion</a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('upload') }}" class="btn btn-primary"><i class="fas fa-upload"></i> Publier</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-primary"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-primary"><i class="fas fa-sign-in-alt"></i> Connexion</a>
                 <a href="{{ url_for('register') }}" class="btn btn-primary"><i class="fas fa-user-plus"></i> Inscription</a>
-            
+            {% endif %}
         </div>
     </div>
 </nav>
@@ -495,10 +492,11 @@
         </div>
 
         <div class="search-container">
-            <form method="post" class="search-box">
-                <input type="text" name="query" class="search-input" 
+            <form method="post" class="search-box" id="searchForm">
+                <input type="text" name="query" class="search-input" id="searchInput"
                        placeholder="Recherchez des articles, thèses, rapports..." 
                        value="{{ query if query else '' }}">
+                <input type="hidden" name="filter" id="filterInput" value="all">
                 <button type="submit" class="search-btn">
                     <i class="fas fa-search"></i>
                     Rechercher
@@ -517,6 +515,9 @@
                 </div>
                 <div class="filter-chip" data-filter="reports">
                     <i class="fas fa-file-alt"></i> Rapports
+                </div>
+                <div class="filter-chip" data-filter="memoires">
+                    <i class="fas fa-book"></i> Mémoires
                 </div>
                 <div class="filter-chip" data-filter="recent">
                     <i class="fas fa-clock"></i> Récents
@@ -541,17 +542,30 @@
             </div>
             
             {% for r in results %}
-            <div class="result-item">
+            <div class="result-item" data-type="{{ r.get('type', 'unknown') }}">
                 <div class="result-title">
                     <a href="/pdf/{{ r['filename'] }}" target="_blank">{{ r['title'] }}</a>
                 </div>
                 
                 <div class="result-authors">
-                    J. Dupont, M. Martin, A. Bernard - Université de Sciences
+                    {% if r.get('authors') %}
+                        {{ r['authors'] }}
+                    {% else %}
+                        J. Dupont, M. Martin, A. Bernard - Université de Sciences
+                    {% endif %}
                 </div>
                 
                 <div class="result-meta">
-                    2024 - {{ r['filename'] }} - Publication scientifique
+                    2024 - {{ r['filename'] }} - 
+                    {% if r['filename'].endswith('.pdf') %}
+                        Document PDF
+                    {% elif r['filename'].endswith('.docx') %}
+                        Document Word
+                    {% elif r['filename'].endswith('.txt') %}
+                        Document texte
+                    {% else %}
+                        Publication scientifique
+                    {% endif %}
                 </div>
                 
                 <div class="result-content">
@@ -564,7 +578,7 @@
                 
                 <div class="result-actions">
                     <a href="/pdf/{{ r['filename'] }}" target="_blank" class="result-link pdf-link">
-                        Télécharger PDF
+                        Télécharger
                     </a>
                     <a href="#" class="result-link" onclick="saveToFavorites('{{ r['filename'] }}')">
                         Enregistrer
@@ -592,6 +606,8 @@
     </div>
 
     <script>
+        let currentFilter = 'all';
+        
         // Animation des particules flottantes
         function createParticles() {
             const particlesContainer = document.getElementById('particles');
@@ -610,33 +626,115 @@
             }
         }
 
+        // Fonction pour déterminer le type de document
+        function getDocumentType(filename) {
+            if (filename.toLowerCase().includes('article') || filename.toLowerCase().includes('paper')) {
+                return 'articles';
+            } else if (filename.toLowerCase().includes('these') || filename.toLowerCase().includes('thesis')) {
+                return 'theses';
+            } else if (filename.toLowerCase().includes('rapport') || filename.toLowerCase().includes('report')) {
+                return 'reports';
+            } else if (filename.toLowerCase().includes('memoire') || filename.toLowerCase().includes('memoir')) {
+                return 'memoires';
+            } else if (filename.endsWith('.pdf')) {
+                return 'articles'; // PDF par défaut = article
+            } else if (filename.endsWith('.docx')) {
+                return 'reports'; // DOCX par défaut = rapport
+            } else if (filename.endsWith('.txt')) {
+                return 'memoires'; // TXT par défaut = mémoire
+            }
+            return 'unknown';
+        }
+
+        // Fonction pour filtrer les résultats
+        function filterResults() {
+            const resultItems = document.querySelectorAll('.result-item');
+            let visibleCount = 0;
+            
+            resultItems.forEach(item => {
+                const filename = item.querySelector('.result-meta').textContent;
+                const docType = getDocumentType(filename);
+                
+                if (currentFilter === 'all' || currentFilter === docType) {
+                    item.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            // Mettre à jour le compteur de résultats
+            const resultsCount = document.querySelector('.results-count');
+            if (resultsCount) {
+                resultsCount.textContent = `${visibleCount} résultats`;
+            }
+        }
+
         // Gestion des filtres
         document.querySelectorAll('.filter-chip').forEach(chip => {
             chip.addEventListener('click', function() {
+                // Retirer la classe active de tous les filtres
                 document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                
+                // Ajouter la classe active au filtre cliqué
                 this.classList.add('active');
                 
-                // Ici vous pouvez ajouter la logique de filtrage
-                console.log('Filtre sélectionné:', this.dataset.filter);
+                // Mettre à jour le filtre actuel
+                currentFilter = this.dataset.filter;
+                
+                // Mettre à jour le champ caché pour la recherche
+                document.getElementById('filterInput').value = currentFilter;
+                
+                // Filtrer les résultats existants
+                filterResults();
+                
+                // Si il y a une recherche, la relancer avec le nouveau filtre
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput.value.trim()) {
+                    performSearch();
+                }
             });
         });
+
+        // Fonction pour effectuer une recherche
+        function performSearch() {
+            const form = document.getElementById('searchForm');
+            const query = document.getElementById('searchInput').value;
+            
+            if (query.trim()) {
+                // Mettre à jour le filtre dans le formulaire
+                document.getElementById('filterInput').value = currentFilter;
+                
+                // Soumettre le formulaire
+                form.submit();
+            }
+        }
 
         // Gestion des recherches récentes
         document.querySelectorAll('.recent-item').forEach(item => {
             item.addEventListener('click', function() {
                 document.querySelector('.search-input').value = this.textContent;
                 document.querySelector('.search-input').focus();
+                
+                // Déclencher la recherche
+                setTimeout(() => {
+                    performSearch();
+                }, 100);
             });
+        });
+
+        // Gestion de la soumission du formulaire
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            // Mettre à jour le filtre avant la soumission
+            document.getElementById('filterInput').value = currentFilter;
         });
 
         // Fonctions pour les boutons d'actions
         function saveToFavorites(filename) {
-            // Logique pour sauvegarder en favoris
             alert('Document ajouté aux favoris !');
         }
 
         function shareResult(title) {
-            // Logique pour partager
             if (navigator.share) {
                 navigator.share({
                     title: title,
@@ -651,12 +749,16 @@
         // Auto-completion (simulation)
         const searchInput = document.querySelector('.search-input');
         searchInput.addEventListener('input', function() {
-            // Ici vous pouvez ajouter une logique d'auto-completion
             console.log('Recherche en cours:', this.value);
         });
 
         // Initialisation
         createParticles();
+        
+        // Filtrer les résultats au chargement de la page
+        if (document.querySelectorAll('.result-item').length > 0) {
+            filterResults();
+        }
     </script>
 </body>
 </html>
